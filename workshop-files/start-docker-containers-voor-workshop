@@ -1,0 +1,8 @@
+docker start redis_primary
+docker start redis_replica{1,2}
+docker start nodejs
+docker start logstash
+docker start apache
+docker start HAP2
+docker start james_blog
+

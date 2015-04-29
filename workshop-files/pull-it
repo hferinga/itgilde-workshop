@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FROM="ubuntu:14.10 ubuntu:14.04 ubuntu:latest centos:latest ubuntu:trusty ubuntu:utopic registry:latest" 
+
+
+for f in $FROM
+do
+  docker pull $f
+done
+
+
+
+

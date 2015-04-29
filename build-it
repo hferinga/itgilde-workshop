@@ -1,0 +1,6 @@
+#!/bin/bash
+
+
+for d in nginx apache jekyll redis_base redis_primary redis_replica haproxy nodejs logstash; do cd $d; docker build -t hferinga/${d} .; cd -; done
+
+

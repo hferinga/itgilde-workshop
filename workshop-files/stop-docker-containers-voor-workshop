@@ -1,0 +1,8 @@
+docker stop redis_primary
+docker stop redis_replica{1,2}
+docker stop nodejs
+docker stop logstash
+docker stop apache
+docker stop HAP2
+docker stop james_blog
+

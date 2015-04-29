@@ -1,0 +1,72 @@
+###########################################################################
+# Als de user die de docker commando's uitvoert in de group docker zit,
+# kunnen de docker commando's zonder sudo worden uitgevoerd!
+# build images (telkens vanuit de directory met de Dockerfile)
+###########################################################################
+# jekyll/apache (Opdracht 1)
+sudo docker build -t hferinga/jekyll . 
+sudo docker build -t hferinga/apache . 
+
+# redis,nodejs,logstash (Opdracht 2)
+sudo docker build -t hferinga/redis_base .
+sudo docker build -t hferinga/redis_primary .
+sudo docker build -t hferinga/redis_replica .
+sudo docker build -t hferinga/nodejs .
+sudo docker build -t hferinga/logstash .
+
+# haproxy
+sudo docker build -t hferinga/haproxy .
+###########################################################################
+# run containers
+###########################################################################
+# jekyll/apache (Opdracht 1)
+sudo docker run --volume `pwd`/blog/james_blog:/data/ -h james_blog   --name james_blog hferinga/jekyll
+#sudo docker run -d -P --volumes-from james_blog -h apache --name apache hferinga/apache
+# of
+sudo docker run -d --volumes-from james_blog -h apache --name apache -p 8080:80 hferinga/apache
+
+# redis(primary,replica{1,2},nodejs,logstasch
+sudo docker run -d -h redis_primary --name redis_primary hferinga/redis_primary
+sudo docker run -d -h redis_replica1 --name redis_replica1 --link redis_primary:redis_primary hferinga/redis_replica
+sudo docker run -d -h redis_replica2 --name redis_replica2 --link redis_primary:redis_primary hferinga/redis_replica
+sudo docker run -d --name nodejs -h nodejs -p 3000:3000 --link redis_primary:redis_primary hferinga/nodejs
+sudo docker run -d --name logstash -h logstash --volumes-from redis_primary --volumes-from nodejs hferinga/logstash
+
+# haproxy
+sudo docker run -d -p 8000:80 -p 8188:88 -v /var/tmp/haproxy:/haproxy-override -h HAP2 --name HAP2 --link apache:web02 --link nodejs:web01 hferinga/haproxy 
+
+###########################################################################
+# start containers
+###########################################################################
+sudo docker start redis_primary
+sudo docker start redis_replica{1,2}
+sudo docker start nodejs
+sudo docker start logstash
+sudo docker start apache
+sudo docker start HAP2
+sudo docker start james_blog
+###########################################################################
+# stop containers
+###########################################################################
+sudo docker stop redis_primary
+sudo docker stop redis_replica{1,2}
+sudo docker stop nodejs
+sudo docker stop logstash
+sudo docker stop apache
+sudo docker stop HAP2
+###########################################################################
+# wegwerp containers:
+###########################################################################
+sudo docker run -ti --rm --volumes-from=redis_replica1 ubuntu cat /var/log/redis/redis-replica.log
+sudo docker run­--rm --volumes-from=james_blog ­-v $(pwd):/backup ubuntu tar cvf /backup/james_blog_backup.tar /var/www/html
+sudo docker run­--rm --volumes-from=james_blog ­-v /var/tmp/backupdir:/backup ubuntu tar cvf /backup/james_blog_backup.tar /var/www/html
+
+###########################################################################
+# diversen
+###########################################################################
+sudo docker logs -f logstash
+sudo chcon -Rt svirt_sandbox_file_t `pwd`/blog
+sudo chcon -Rt svirt_sandbox_file_t /var/tmp/haproxy/
+sudo chcon -Rt svirt_sandbox_file_t /var/tmp/backupdir
+
+

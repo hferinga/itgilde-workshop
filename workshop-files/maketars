@@ -1,0 +1,9 @@
+#!/bin/bash
+
+PROJECTS="redis_base redis_primary redis_replica haproxy jekyll nodejs apache logstash blog workshop-files"
+TARFILE="docker-workshop-01.tgz"
+
+
+tar cfz $TARFILE $PROJECTS
+
+

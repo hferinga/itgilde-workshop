@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# push to private registry (in this example it is hosted on 172.28.0.241 port 5000)
+# set /etc/sysconfig/docker INSECURE_REGISTRY='--insecure-registry 172.28.0.241:5000'
+# or maybe without the hostname/ipaddress:port. Not tested
+# Assumes that we have a very basic private registry setup without authentication, or
+# ssl/tls connection, or at least without a trusted CA certificate
+
+# docker images | grep hferinga | awk '{ print $1 }' | sed s/hferinga/172.28.0.241:5000/
+
+Images=$(docker images | grep hferinga | awk '{print $1}')
+
+for I in $Images
+do
+  Tag=$(echo $I | sed s/hferinga/172.28.0.241:5000/g)
+  #echo "docker tag $I $Tag"
+  docker tag $I $Tag
+  #echo "docker push $Tag"
+  docker push $Tag
+done
+
+
+
+
+
+

@@ -1,0 +1,19 @@
+###########################################################################
+# run containers
+###########################################################################
+# nginx
+docker run -d -p 8088:80 --name nginx-web hferinga/nginx nginx -g "daemon off;"
+# jekyll/apache (Opdracht 1)
+docker run --volume `pwd`/blog/james_blog:/data/ -h james_blog   --name james_blog hferinga/jekyll
+docker run -d -P --volumes-from james_blog -h apache --name apache -p 8080:80 hferinga/apache
+
+# redis(primary,replica{1,2},nodejs,logstasch (Opdracht 2)
+docker run -d -h redis_primary --name redis_primary hferinga/redis_primary
+docker run -d -h redis_replica1 --name redis_replica1 --link redis_primary:redis_primary hferinga/redis_replica
+docker run -d -h redis_replica2 --name redis_replica2 --link redis_primary:redis_primary hferinga/redis_replica
+docker run -d --name nodejs -h nodejs -p 3000:3000 --link redis_primary:redis_primary hferinga/nodejs
+docker run -d --name logstash -h logstash --volumes-from redis_primary --volumes-from nodejs hferinga/logstash
+
+# haproxy (Opdracht 3)
+docker run -d -p 8000:80 -p 8188:88 -v /var/tmp/haproxy:/haproxy-override -h HAP2 --name HAP2 --link apache:web02 --link nodejs:web01 hferinga/haproxy 
+

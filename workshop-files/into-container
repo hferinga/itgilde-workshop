@@ -1,0 +1,37 @@
+#!/bin/bash
+
+DockerOpts=""
+
+errorexit() {
+  echo "ERROR: $*"
+  exit 1
+}
+
+usage() {
+  echo "usage: ${0##*/} image-name"
+  exit 1
+}
+
+
+[[ $# -ne 1 ]] && usage
+
+IMAGE=$1
+
+# Get container id
+ID=$(docker ${DockerOpts} ps -a | grep Up | grep $IMAGE | awk '{print $1'})
+
+echo ID:$ID
+
+[[ "x${ID}" == "x" ]] && errorexit "Could not find Container ID: Is it running?"
+
+
+# Now get PID of Container
+PID=$(docker ${DockerOpts} inspect --format '{{.State.Pid}}' $ID)
+
+
+echo PID: $PID
+
+# now enter container
+nsenter --target ${PID} --mount --uts --ipc --net --pid
+
+
